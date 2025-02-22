@@ -21,53 +21,165 @@ def check_admin(view_func):
 @admin_blueprint.route('/')
 @check_admin
 def dashboard():
-    cust_result = db.session.query(
-        func.date_format(User.createdAt, '%Y-%u').label('week_date'),
-        func.count(User.userID).label('count'),
-        func.sum(func.count(User.userID)).over(order_by=func.date_format(User.createdAt, '%Y-%u')).label('cumulative_count')
-    ).group_by(func.date_format(User.createdAt, '%Y-%u')).all()
+    # Customer statistic
+    cust = User.query.filter(User.userID.ilike('C%')).count()
 
-    custlabels = [r.week_date for r in cust_result]
-    custdata = [r.cumulative_count for r in cust_result]
 
-    sale_result = db.session.query(
+    # Product Statistics
+    product_stats = {
+        "products": Product.query.all(),
+        "total": Product.query.count(),
+        "inactive": Product.query.filter(Product.status.ilike('inactive%')).count(),
+        "active": Product.query.filter(Product.status.ilike('active%')).count()
+    }
+
+    # Weekly Sales Data
+    sales_query = db.session.query(
         Product.productName,
-        func.sum(OrderItem.quantity).label('total_quantity')
+        func.date_format(Order.createdAt, '%Y-%u').label('week'),
+        func.sum(OrderItem.quantity).label('total_sold')
     ).join(OrderItem, Product.productID == OrderItem.productID) \
-     .group_by(Product.productID).all()
+     .join(Order, Order.orderID == OrderItem.orderID) \
+     .group_by(Product.productName, func.date_format(Order.createdAt, '%Y-%u')) \
+     .order_by(func.date_format(Order.createdAt, '%Y-%u').asc()) \
+     .all()
 
-    salelabels = [r.productName for r in sale_result]
-    saledata = [r.total_quantity for r in sale_result]
+    weekly_sales = {}
+    all_weeks = set()
 
-    review_result = db.session.query(
-        Review.rating,
-        func.count(Review.rating).label('rating_count')
-    ).filter(Review.rating.isnot(None)).group_by(Review.rating).all()
+    for product_name, week, total_sold in sales_query:
+        weekly_sales.setdefault(product_name, {})[week] = int(total_sold)
+        all_weeks.add(week)
 
-    reviewlabels = [str(r.rating) for r in review_result]
-    reviewdata = [r.rating_count for r in review_result]
+    all_weeks = sorted(all_weeks)
+    datasets = [
+        {"label": product_name, "data": [weekly_sales.get(product_name, {}).get(week, 0) for week in all_weeks]}
+        for product_name in weekly_sales
+    ]
 
-    product_count = Product.query.count() #total product catalogue
-    review_count = Review.query.count() #total review received
-    customer_count = User.query.filter(User.userID.ilike('C%')).count() #total customer registered
-    total_item_sold = db.session.query(func.sum(OrderItem.quantity)).scalar() or 0
-    total_payment_amount = round(db.session.query(func.sum(Payment.amount)).scalar() or 0, 2)
+    # Weekly Profit Data
+    profit_query = db.session.query(
+        func.date_format(Payment.createdAt, '%Y-%u').label('week'),
+        func.sum(Payment.amount).label('total_profit')
+    ).group_by(func.date_format(Payment.createdAt, '%Y-%u')) \
+     .order_by(func.date_format(Payment.createdAt, '%Y-%u').desc()) \
+     .limit(2) \
+     .all()
+
+    current_week_profit = profit_query[0].total_profit if profit_query else 0
+    previous_week_profit = profit_query[1].total_profit if len(profit_query) == 2 else 0
+
+    profit_trend = None
+    profit_percentage_change = 0
+
+    if previous_week_profit > 0:
+        if current_week_profit > previous_week_profit:
+            profit_trend = "up"
+        elif current_week_profit < previous_week_profit:
+            profit_trend = "down"
+
+        profit_percentage_change = round(((current_week_profit - previous_week_profit) / previous_week_profit) * 100, 2)
+
+    # Top-Selling Product
+    top_product = db.session.query(Product).join(OrderItem) \
+        .group_by(Product.productID) \
+        .order_by(func.sum(OrderItem.quantity).desc()) \
+        .first()
+
+    # Review Data (Example: Assuming you have a 'Review' model)
+    review_query = db.session.query(
+        Review.rating, func.count(Review.rating).label("count")
+    ).group_by(Review.rating).all()
+
+    reviewlabels = [str(rating) for rating, _ in review_query]
+    reviewdata = [count for _, count in review_query]
+
+    #Feedback
+    urgency = {
+        "critical": Feedback.query.filter(Feedback.severity.ilike('Critical')).count(),
+        "high": Feedback.query.filter(Feedback.severity.ilike('High')).count(),
+        "medium": Feedback.query.filter(Feedback.severity.ilike('Medium')).count()
+    }
+
+    # Get Current Date
+    malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
+    current_timestamp = datetime.now(pytz.utc).astimezone(malaysia_tz).strftime('%Y/%m/%d %H:%M GMT')
+
+    # Weekly Customer Registration Data
+    customer_query = db.session.query(
+        func.date_format(User.createdAt, '%Y-%u').label('week'),
+        func.count(User.userID).label('total_customers')
+    ).group_by(func.date_format(User.createdAt, '%Y-%u')) \
+    .order_by(func.date_format(User.createdAt, '%Y-%u').desc()) \
+    .limit(2) \
+    .all()
+
+    # Extract current and previous week customer counts
+    current_week_customers = customer_query[0].total_customers if customer_query else 0
+    previous_week_customers = customer_query[1].total_customers if len(customer_query) == 2 else 0
+
+    customer_trend = None
+    customer_percentage_change = 0
+
+    # Determine trend and percentage change
+    if previous_week_customers > 0:
+        if current_week_customers > previous_week_customers:
+            customer_trend = "up"
+        elif current_week_customers < previous_week_customers:
+            customer_trend = "down"
+
+        customer_percentage_change = round(((current_week_customers - previous_week_customers) / previous_week_customers) * 100, 2)
+
+    #item sold
+    items_sold_query = db.session.query(
+        func.date_format(Order.createdAt, '%Y-%u').label('week'),
+        func.sum(OrderItem.quantity).label('total_items_sold')
+    ).join(Order, OrderItem.orderID == Order.orderID) \
+    .group_by(func.date_format(Order.createdAt, '%Y-%u')) \
+    .order_by(func.date_format(Order.createdAt, '%Y-%u').desc()) \
+    .limit(2) \
+    .all()
+
+    # Extract current and previous week's item sales
+    current_week_items_sold = items_sold_query[0].total_items_sold if items_sold_query else 0
+    previous_week_items_sold = items_sold_query[1].total_items_sold if len(items_sold_query) == 2 else 0
+
+    items_sold_trend = None
+    items_sold_percentage_change = 0
+
+    # Determine trend and percentage change
+    if previous_week_items_sold > 0:
+        if current_week_items_sold > previous_week_items_sold:
+            items_sold_trend = "up"
+        elif current_week_items_sold < previous_week_items_sold:
+            items_sold_trend = "down"
+
+        items_sold_percentage_change = round(((current_week_items_sold - previous_week_items_sold) / previous_week_items_sold) * 100, 2)
 
 
+    # Pass to template
     return render_template(
         "/admin/dashboard.html",
-        product_count=product_count,
-        review_count=review_count,
-        customer_count=customer_count,
-        total_payment_amount=total_payment_amount,
-        total_item_sold=total_item_sold,
-        custlabels=custlabels,
-        custdata=custdata,
-        salelabels=salelabels,
-        saledata=saledata,
+        product=product_stats,
+        labels=all_weeks,
+        datasets=datasets,
+        top=top_product,
+        profit_trend=profit_trend,
+        week_profit=current_week_profit,
+        percentage_change=profit_percentage_change,
         reviewlabels=reviewlabels,
-        reviewdata=reviewdata
+        reviewdata=reviewdata,
+        timestamp=current_timestamp,
+        urgent=urgency,
+        cust=cust,
+        custtrend=customer_trend,
+        customerPercent=customer_percentage_change,
+        itemstrend=items_sold_trend,
+        sold_percentage=items_sold_percentage_change,
+        weeklysale=current_week_items_sold
     )
+
+
 
 #CATEGORY DONE
 @admin_blueprint.route('/category', methods=["GET","POST"])
