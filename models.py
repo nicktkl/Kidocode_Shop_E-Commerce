@@ -1,5 +1,19 @@
 from flask_sqlalchemy import SQLAlchemy
+from imports import url_for
 db = SQLAlchemy()
+
+# Branch model
+class Branch(db.Model):
+    __tablename__ = 'branches'
+
+    branchID = db.Column(db.String(10), primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.Text, nullable=False)
+    operating_hours = db.Column(db.String(50), nullable=False)
+    link = db.Column(db.String(100), nullable=True)
+
+    def __repr__(self):
+        return f"<Branch {self.name}>"
 
 # Category model
 class Category(db.Model):
@@ -49,13 +63,11 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(15), nullable=True)
     address = db.Column(db.Text, nullable=True)
-    secondaryAddress = db.Column(db.Text, nullable=True)
     createdAt = db.Column(db.TIMESTAMP, default=db.func.current_timestamp(), nullable=False)
     updatedAt = db.Column(db.TIMESTAMP, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp(), nullable=False)
 
     orders = db.relationship('Order', back_populates='user')
     reviews = db.relationship('Review', back_populates='user')
-    feedbacks = db.relationship('Feedback', back_populates='user')
 
     def __repr__(self):
         return f"<User {self.firstName} {self.lastName}>"
@@ -67,13 +79,12 @@ class Order(db.Model):
     orderID = db.Column(db.String(13), primary_key=True)
     userID = db.Column(db.String(4), db.ForeignKey('user.userID', ondelete='CASCADE'), nullable=False)
     totalAmount = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(15), nullable=False, default="Processing")
-    shippingAddress = db.Column(db.Text, nullable=False)
-    shippingMethod = db.Column(db.String(50), nullable=False)
-    pickupBranch = db.Column(db.Text, nullable=True)
     createdAt = db.Column(db.TIMESTAMP, default=db.func.current_timestamp(), nullable=False)
     updatedAt = db.Column(db.TIMESTAMP, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp(), nullable=False)
-
+    status = db.Column(db.Enum('pending', 'processing', 'shipped', 'ready', 'cancelled', 'completed', name='order_status_enum'), nullable=False, default='pending')
+    shippingMethod = db.Column(db.String(50), nullable=False)
+    dropLocation = db.Column(db.Text, nullable=False)
+    
     user = db.relationship('User', back_populates='orders')
     order_items = db.relationship('OrderItem', back_populates='order', lazy='dynamic')
     payments = db.relationship('Payment', back_populates='order')
@@ -96,6 +107,34 @@ class OrderItem(db.Model):
 
     def __repr__(self):
         return f"<OrderItem {self.orderItemID} for Order {self.orderID}>"
+    
+    def serialize(self):
+        """Serialize the order item for JSON representation."""
+        return {
+            'id': self.orderItemID,
+            'productID': self.productID,
+            'name': self.product.productName if self.product else "Unknown",
+            'quantity': self.quantity,
+            'price': self.price,
+            'img': url_for('static', filename=self.product.img.replace('\\', '/')) if self.product and self.product.img else None
+        }
+
+# Payment model
+class Payment(db.Model):
+    __tablename__ = 'payment'
+
+    paymentID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    orderID = db.Column(db.String(13), db.ForeignKey('orders.orderID', ondelete='CASCADE'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    deliveryCharge = db.Column(db.Float, nullable=False)
+    paymentMethod = db.Column(db.String(30), nullable=False)
+    status = db.Column(db.Enum('pending', 'received', 'cancelled', 'completed', name='order_status_enum'), nullable=False, default='pending')
+    createdAt = db.Column(db.TIMESTAMP, default=db.func.current_timestamp(), nullable=False)
+
+    order = db.relationship('Order', back_populates='payments')
+
+    def __repr__(self):
+        return f"<Payment {self.paymentID} for Order {self.orderID}>"
 
 # Review model
 class Review(db.Model):
@@ -115,39 +154,21 @@ class Review(db.Model):
 
     def __repr__(self):
         return f"<Review {self.reviewID} for Product {self.productID}>"
-
-# Payment model
-class Payment(db.Model):
-    __tablename__ = 'payment'
-
-    paymentID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    orderID = db.Column(db.String(13), db.ForeignKey('orders.orderID', ondelete='CASCADE'), nullable=False)
-    paymentDate = db.Column(db.Date, nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    deliveryCharge = db.Column(db.Float, nullable=False)  # Added deliveryCharge column
-    paymentMethod = db.Column(db.String(30), nullable=False)
-    status = db.Column(db.String(15), nullable=False)
-
-    order = db.relationship('Order', back_populates='payments')
-
-    def __repr__(self):
-        return f"<Payment {self.paymentID} for Order {self.orderID}>"
     
 # Feedback model
 class Feedback(db.Model):
     __tablename__ = 'feedback'
 
     feedbackID = db.Column(db.String(4), primary_key=True)
-    userID = db.Column(db.String(4), db.ForeignKey('user.userID', ondelete='CASCADE'), nullable=False)
-    feedbackType = db.Column(db.Enum('Bug', 'Suggestion', 'Praise', 'Complaint', name='feedback_type'), nullable=False)
-    feedbackText = db.Column(db.Text, nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False)
+    type = db.Column(db.Enum('Bug', 'Suggestion', 'Praise', 'Complaint', 'Other', name='feedback_type'), nullable=False)
+    text = db.Column(db.Text, nullable=False)
     createdAt = db.Column(db.TIMESTAMP, default=db.func.current_timestamp(), nullable=False)
     updatedAt = db.Column(db.TIMESTAMP, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp(), nullable=False)
     status = db.Column(db.Enum('Pending', 'Reviewed', 'Resolved', name='feedback_status'), default='Pending', nullable=False)
     response = db.Column(db.Text, nullable=True)
     severity = db.Column(db.Enum('Low', 'Medium', 'High', 'Critical', name='feedback_severity'), nullable=True)
-
-    user = db.relationship('User', back_populates='feedbacks')
 
     def __repr__(self):
         return f"<Feedback {self.feedbackID}: {self.feedbackType}>"
