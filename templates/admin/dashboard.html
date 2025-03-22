@@ -21,7 +21,7 @@
 <body>
     {% include "/admin/index.html" %}
     <div class="container my-5">
-        <h1 class="text-primary">Dashboard</h1>
+        <h1 class="text-primary mb-3">Dashboard</h1>
         <div class="row">
             <div class="col-3">
                 <div class="card">
@@ -78,7 +78,7 @@
                 <div class="card my-2">
                     <img src="{{ url_for('static', filename=top.img.replace('\\', '/')) }}" class="card-img-top" >
                     <div class="card-body">
-                        <h5 class="card-title"> <i class="bi bi-fire text-danger blinking"></i> Hot Selling Product</h5>
+                        <h4 class="card-title fw-bold"> <i class="bi bi-fire text-danger blinking"></i> Hot Selling Product</h4>
                         <p class="card-text">
                             {{top.productName}} <br/>
                             <span class="small">
@@ -91,11 +91,11 @@
                 <div class="card">
                     <div class="card-body">
                         {% if urgent.critical > 0 or urgent.high > 0 or urgent.medium > 0 %}
-                            <h5 class="card-title"><i class="bi bi-exclamation-triangle-fill text-warning blinking me-3"></i>Urgent</h5>
-                            <p class="card-text">Issue that needed attention immediately !!</p>
-                            <p class="card-text"><span class="rounded-pill bg-danger text-light px-2 me-2">{{urgent.critical}}</span> critical issue(s)</p>
-                            <p class="card-text"><span class="rounded-pill bg-warning text-light px-2 me-2">{{urgent.high}}</span> high severity issue(s)</p>
-                            <p class="card-text"><span class="rounded-pill bg-warning bg-opacity-50 text-dark px-2 me-2">{{urgent.medium}}</span> medium severity issue(s)</p>
+                            <h4 class="card-title fw-bold"><i class="bi bi-exclamation-triangle-fill text-warning blinking me-3"></i>Urgent</h4>
+                            <p class="card-text">Issue that needed attention immediately!!!</p>
+                            <p class="card-text"><span class="rounded-pill bg-danger text-light px-2 me-2">{{urgent.critical}}</span> Critical Issue(s)</p>
+                            <p class="card-text"><span class="rounded-pill bg-warning text-light px-2 me-2">{{urgent.high}}</span> High Severity Issue(s)</p>
+                            <p class="card-text"><span class="rounded-pill bg-warning bg-opacity-50 text-dark px-2 me-2">{{urgent.medium}}</span> Medium Severity Issue(s)</p>
                         {% else %}
                             <h5 class="card-title"><i class="bi bi-check-square-fill text-success blinking me-3"></i>Urgent</h5>
                             <p class="card-text">No complains has been received recently</p>
