@@ -2,11 +2,10 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Admin - Category</title>
+        <title>Categories | izNiSa Admin</title>
     </head>
     <body class="bg-white text-dark">
         {% include "/admin/index.html" %}
-
         <div class="container my-5">
             <h1 class="text-primary">Categories</h1>
             <div class="d-flex align-items-center my-3">
@@ -23,7 +22,6 @@
                     </button>
                 </form>
             </div>
-            
             {% include "alert.html" %}
             <div class="accordion">
                 {% for category in main_categories %}
@@ -50,7 +48,6 @@
                         </h2>
                         <div id="collapse{{ category.categoryID }}" class="accordion-collapse collapse" aria-labelledby="heading{{ category.categoryID }}" data-bs-parent="#categoryAccordion">
                             <div class="accordion-body">
-
                                 {% if category.subcategories %}
                                     <table class="table">
                                         <thead>
@@ -87,7 +84,6 @@
                     </div>
                 {% endfor %}
             </div>
-
             <div class="modal fade" id="newcategory" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">

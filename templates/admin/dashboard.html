@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Dashboard</title>
+    <title>Dashboard | izNiSa Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <style>
@@ -19,12 +19,9 @@
     </style>
 </head>
 <body>
-
     {% include "/admin/index.html" %}
-
     <div class="container my-5">
         <h1 class="text-primary">Dashboard</h1>
-
         <div class="row">
             <div class="col-3">
                 <div class="card">
@@ -57,8 +54,6 @@
                                     </div>
                                 </div>
                             </div>
-                        
-                            <!-- Active Products -->
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="headingActive">
                                     <button class="accordion-button bg-success text-light small py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseActive" aria-expanded="false" aria-controls="collapseActive">
@@ -78,7 +73,6 @@
                                 </div>
                             </div>
                         </div>
-                        
                     </div>                       
                 </div>
                 <div class="card my-2">
@@ -110,7 +104,6 @@
                     </div>
                 </div>
             </div>
-            
             <div class="col-8 mx-3">
                 <div class="row justify-content-center">
                     <div class="alert alert-light bg-light mx-2" style="width: 30%;">
@@ -165,7 +158,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center justify-content-start flex-wrap">
@@ -179,7 +171,6 @@
                         <canvas id="salesChart"></canvas>
                     </div>                       
                 </div>
-
                 <div class="mt-3">
                     <div class="card">
                         <div class="card-header">
@@ -198,7 +189,6 @@
             </div>
         </div>
     </div>
-
     <script>
         var labels = [{% for week in labels %}"{{ week }}"{% if not loop.last %}, {% endif %}{% endfor %}];
     

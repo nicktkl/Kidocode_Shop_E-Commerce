@@ -2,11 +2,10 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Admin - Product</title>
+        <title>Products | izNiSa Admin</title>
     </head>
     <body>
         {% include "/admin/index.html" %}
-    
         <div class="container my-5">
             <h1 class="text-primary">Products</h1>
             <form action="/admin/product" method="get">
@@ -18,14 +17,11 @@
                     </div>
                     <button class="btn btn-outline-primary d-flex align-items-center me-2 px-3" type="submit" name="btnSearch">
                         <i class="bi bi-search me-2"></i> Search
-
                     </button>
                     <button class="btn btn-outline-primary d-flex align-items-center px-3" type="button" data-bs-toggle="modal" data-bs-target="#addProduct">
                         <i class="bi bi-plus-circle me-2"></i>Add New
                     </button>
                 </div>
-                
-                <!-- Filter Buttons Row -->
                 <div class="row my-3">
                     <div class="col-sm-5">
                         <form action="/admin/product" method="get" class="d-inline">
@@ -50,7 +46,6 @@
                     </div>
                 </div>                
             </form>
-            
             {% include "alert.html" %}
             <div class="row">
                 {% for product in product %}
@@ -70,7 +65,6 @@
                                         {{ product.category.name }}
                                     {% endif %}
                                 </div>                                
-                                <!-- Status Toggle -->
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="status-{{ product.productID }}" name="p_status" 
                                         value="active" {% if product.status == 'active' %}checked{% endif %}>
@@ -82,7 +76,6 @@
                         </div>
                         <div class="card-body">
                             <div class="d-flex">
-                                <!-- Product Image -->
                                 <div class="me-3" style="width: 45%; height: 100%;">
                                     {% if product.img is none %}
                                     <img src="https://via.placeholder.com/100" class="img-thumbnail w-100 h-100" style="object-fit: cover;">
@@ -90,22 +83,15 @@
                                     <img src="{{ url_for('static', filename=product.img.replace('\\', '/')) }}" class="img-thumbnail w-100 h-100" style="object-fit: cover;">
                                     {% endif %}
                                 </div>
-            
-                                <!-- Product Details -->
                                 <div class="flex-grow-1">
-                                    <!-- Product Name -->
                                     <div class="mb-2 input-group">
                                         <span class="input-group-text"><i class="bi bi-card-text"></i></span>
                                         <input type="text" class="form-control" name="p_name" required value="{{ product.productName }}">
                                     </div>
-            
-                                    <!-- Product Description -->
                                     <div class="mb-2 input-group">
                                         <span class="input-group-text"><i class="bi bi-file-earmark-text"></i></span>
                                         <textarea class="form-control" name="p_desc" rows="2" required>{{ product.description }}</textarea>
                                     </div>
-            
-                                    <!-- Price and Stock -->
                                     <div class="d-flex">
                                         <div class="me-3" style="width: 50%;">
                                             <div class="input-group">
@@ -152,7 +138,6 @@
                                 <span class="page-link" aria-hidden="true">&laquo;</span>
                             </li>
                         {% endif %}
-            
                         {% for page_num in range(1, product.pages + 1) %}
                             <li class="page-item {% if page_num == product.page %}active{% endif %}">
                                 <a class="page-link" href="{{ url_for('admin.product', page=page_num, searchProduct=request.args.get('searchProduct', ''), filter=request.args.get('filter', 'all')) }}">
@@ -160,7 +145,6 @@
                                 </a>
                             </li>
                         {% endfor %}
-            
                         {% if product.has_next %}
                             <li class="page-item">
                                 <a class="page-link" href="{{ url_for('admin.product', page=product.next_num, searchProduct=request.args.get('searchProduct', ''), filter=request.args.get('filter', 'all')) }}" aria-label="Next">
@@ -176,8 +160,6 @@
                 </nav>
             </div>            
         </div>            
-    
-        <!-- Add Product Modal -->
         <div class="modal fade" id="addProduct" tabindex="-1" aria-labelledby="addProductLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">

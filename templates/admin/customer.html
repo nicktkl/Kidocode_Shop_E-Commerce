@@ -2,14 +2,12 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Admin - Customer</title>
+        <title>Customers | izNiSa Admin</title>
     </head>
     <body>
         {% include "/admin/index.html" %}
         <div class="container my-5">
             <h1 class="text-primary">Customers</h1>
-        
-            <!-- Search Form -->
             <div class="d-flex align-items-center my-3">
                 <form class="d-flex w-100 align-items-center" action="/admin/customer" method="get">
                     <div class="flex-grow-1 me-2">
@@ -21,7 +19,6 @@
                 </form>
             </div>
             {% include "alert.html" %}
-            <!-- Customers Table -->
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead class="table-light">

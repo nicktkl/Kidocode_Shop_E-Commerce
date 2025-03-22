@@ -1,6 +1,6 @@
 <style>
     .hero-section {
-        background-image: url('../static/images/bg_kidocode.png'); 
+        background-image: url('/static/images/background/background_izNiSa.webp'); 
         background-size: cover; 
         background-position: center center; 
         background-repeat: no-repeat; 
@@ -23,7 +23,7 @@
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         max-width: 600px;
-        width: 90%;
+        width: 100%;
     }
 
     .hero-card h1 {
@@ -64,7 +64,7 @@
     /* For smaller screens, use a mobile-friendly background image */
     @media (max-width: 767px) {
         .hero-section {
-            background-image: url('../static/images/bg_kidocode.png');
+            background-image: url('/static/images/background/background_izNiSa.webp');
             background-size: cover;
             background-position: center center;
             height: auto;
@@ -73,10 +73,10 @@
 </style>
 <div class="hero-section">
     <div class="hero-card">
-        <h1>Welcome to Kidocode Shop</h1>
-        <p>All items for your child’s learning and development, hand-picked by the Kido Team.</p>
+        <h1>Welcome to izNiSa</h1>
+        <p>Everything you need to design, develop, and innovate—where technology meets creativity.</p>
         <a href="{{ url_for('all_products') }}" class="btn btn-primary hero-btn">
-            Look at all the cool new stuff!
+            Dive into all the cool new stuff!
         </a>
     </div>
 </div>

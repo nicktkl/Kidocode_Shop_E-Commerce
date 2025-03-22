@@ -2,17 +2,13 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Admin - Order</title>
+        <title>Orders | izNiSa Admin</title>
     </head>
     <body>
         {% include "/admin/index.html" %}
         <div class="container my-5">
             <h1 class="text-primary">Orders</h1>
-        
-            <!-- Search Form -->
-             
             <form action="/admin/order" method="get">
-                <!-- Search Form -->
                 <div class="d-flex w-100 align-items-center my-3">
                     <div class="flex-grow-1 me-2">
                         <input type="text" class="form-control" name="searchOrder" placeholder="Search" value="{{ request.args.get('searchOrder', '') }}">
@@ -21,8 +17,6 @@
                         <i class="bi bi-search me-2"></i> Search
                     </button>
                 </div>
-            
-                <!-- Order Status Buttons Row -->
                 <div class="row my-3">
                     <div class="col-sm-9">
                         <form action="/admin/order" method="get" class="d-inline">
@@ -37,8 +31,6 @@
                             </div>
                         </form>
                     </div>
-            
-                    <!-- Shipping Method Buttons Row -->
                     <div class="col-sm-3 text-end">
                         <form class="d-inline" action="/admin/order" method="get">
                             <button type="submit" name="method" class="btn btn-primary">All</button>
@@ -87,8 +79,6 @@
                                 </span>
                             </div>
                         </form>
-                        
-                        
                         <div class="card-body">
                             <table class="table">
                                 <tbody>
