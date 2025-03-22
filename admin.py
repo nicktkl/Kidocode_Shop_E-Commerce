@@ -24,7 +24,6 @@ def dashboard():
     # Customer statistic
     cust = User.query.filter(User.userID.ilike('C%')).count()
 
-
     # Product Statistics
     product_stats = {
         "products": Product.query.all(),
@@ -66,8 +65,8 @@ def dashboard():
      .limit(2) \
      .all()
 
-    current_week_profit = profit_query[0].total_profit if profit_query else 0
-    previous_week_profit = profit_query[1].total_profit if len(profit_query) == 2 else 0
+    current_week_profit = profit_query[0].total_profit if len(profit_query) >= 1 else 0
+    previous_week_profit = profit_query[1].total_profit if len(profit_query) >= 2 else 0
 
     profit_trend = None
     profit_percentage_change = 0
@@ -178,8 +177,6 @@ def dashboard():
         sold_percentage=items_sold_percentage_change,
         weeklysale=current_week_items_sold
     )
-
-
 
 #CATEGORY DONE
 @admin_blueprint.route('/category', methods=["GET","POST"])
