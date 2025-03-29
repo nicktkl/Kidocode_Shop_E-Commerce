@@ -10,5 +10,6 @@ from datetime import datetime
 from functools import wraps
 from flask_wtf.csrf import CSRFProtect
 from logging.handlers import RotatingFileHandler
+from dotenv import load_dotenv
 
 csrf = CSRFProtect()
